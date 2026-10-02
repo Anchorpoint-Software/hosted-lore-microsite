@@ -3,97 +3,575 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hosted Lore</title>
-  <meta name="description" content="Hosted Lore by Anchorpoint.">
-  <meta property="og:title" content="Hosted Lore">
-  <meta property="og:description" content="Hosted Lore by Anchorpoint.">
+  <title>Managed Lore Hosting | Anchorpoint</title>
+  <meta name="description" content="A managed Lore hosting solution from Anchorpoint. In the cloud or self-hosted. We take care of security, uptime and support.">
+  <meta property="og:title" content="Managed Lore Hosting | Anchorpoint">
+  <meta property="og:description" content="A managed Lore hosting solution from Anchorpoint. In the cloud or self-hosted. We take care of security, uptime and support.">
   <meta property="og:type" content="website">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='%23fff' font-family='system-ui'>L</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #ffffff;
-      --fg: #111111;
-      --muted: #5c5c5c;
-      --accent: #2f6bff;
-      --border: #e6e6e6;
-      --max: 1080px;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0e0e10;
-        --fg: #f2f2f2;
-        --muted: #a0a0a6;
-        --accent: #6b95ff;
-        --border: #26262a;
-      }
+      --bg: #18191b;
+      --heading: #ffffff;
+      --text: #bbbcc5;
+      --link: #90caf9;
+      --border: #afb0bb;
     }
     *, *::before, *::after { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
       background: var(--bg);
-      color: var(--fg);
-      font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      font: 400 16px/24px "Inter", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    a { color: var(--accent); }
-    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+    p { margin: 0; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover, a:focus-visible { text-decoration: underline; }
 
-    header { border-bottom: 1px solid var(--border); }
-    header .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .logo { font-weight: 700; text-decoration: none; color: var(--fg); }
-
-    .hero { padding: 96px 0 72px; }
-    .hero h1 { font-size: clamp(2.2rem, 6vw, 3.8rem); line-height: 1.1; margin: 0 0 16px; letter-spacing: -0.02em; }
-    .hero p { font-size: 1.2rem; color: var(--muted); max-width: 60ch; margin: 0 0 32px; }
-    .btn {
-      display: inline-block; padding: 12px 22px; border-radius: 8px;
-      background: var(--accent); color: #fff; text-decoration: none; font-weight: 600;
+    /* Canvas matches the 846px-wide Figma frame; everything inside is positioned in frame coordinates. */
+    .page {
+      position: relative;
+      width: 846px;
+      height: 1922px;
+      margin: 64px auto;
     }
 
-    .features { padding: 48px 0 96px; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .feature { border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-    .feature h3 { margin: 0 0 8px; font-size: 1.1rem; }
-    .feature p { margin: 0; color: var(--muted); }
+    /* ASCII graph. Each row is one line of the art; the grid is scaled so the
+       dots land on the Figma dot centres (2.855px per column, 5.157px per row). */
+    .graph {
+      position: absolute;
+      left: -18.08px;
+      top: -30.59px;
+      font: 10px/10px "JetBrains Mono", ui-monospace, Consolas, monospace;
+      white-space: nowrap;
+      transform-origin: 0 0;
+      transform: scale(0.4758, 0.51568);
+    }
+    .graph div { height: 10px; white-space: pre; }
 
-    footer { border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
-    footer .wrap { padding-top: 24px; padding-bottom: 24px; }
+    .content {
+      position: absolute;
+      left: 269px;
+      top: 0;
+      width: 460px;
+    }
+    .section {
+      position: absolute;
+      left: 0;
+      width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .section h1, .section h2 {
+      margin: 0;
+      color: var(--heading);
+      font-weight: 500;
+      font-size: 16px;
+      line-height: normal;
+      letter-spacing: 1px;
+    }
+    .section h1 { font-size: 20px; }
+    .blank { height: 24px; }
+
+    .timings {
+      position: relative;
+      height: 41px;
+      margin: 17.5px 0 13.5px;
+    }
+    .timing {
+      position: absolute;
+      top: 0;
+      width: 150px;
+      height: 41px;
+      padding: 8px 11px;
+      border: 1px solid var(--border);
+      color: var(--heading);
+      white-space: nowrap;
+    }
+
+    .logos {
+      position: absolute;
+      left: -28px;
+      top: 882.5px;
+      width: 619px;
+      height: 59px;
+    }
+    .logos img { position: absolute; display: block; }
+
+    .abs { position: absolute; white-space: nowrap; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <a class="logo" href="./">Hosted Lore</a>
-      <a href="https://www.anchorpoint.app">Anchorpoint</a>
+  <div class="page">
+    <div class="graph" aria-hidden="true">
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<div>                                       772517</div>
+<div>                                      77773177</div>
+<div>                                      777755777</div>
+<div>                                      77772537</div>
+<div>                                         7755</div>
+<div>                                         77 55</div>
+<div>                                         77  55</div>
+<div>                                         77   555</div>
+<div>                                         77    5555</div>
+<div>                                         77       555555555555555555555</div>
+<div>                                         77                           555555</div>
+<div>                                         77                               555</div>
+<div>                                         77                                 555</div>
+<div>                                         77                                  555</div>
+<div>                                         77                                   555</div>
+<div>                                         77                                    55</div>
+<div>                                         77                                    55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                       777777                                   55</div>
+<div>                                      77777777                                  55</div>
+<div>                                      777777777                                 55</div>
+<div>                                      77777777                                  55</div>
+<div>                                        77771                                   55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                        1777                                    55</div>
+<div>                                      77777777                                  55</div>
+<div>                                      777777777                                 55</div>
+<div>                                      77777777                                  55</div>
+<div>                                       777777                                   55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                    5555</div>
+<div>                                         77                                  55555555</div>
+<div>                                         77                                  55555555</div>
+<div>                                         77                                  55555555</div>
+<div>                                         77                                   555555</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55</div>
+<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                         77                                     55                                                                                                                                                                                                                     33333333</div>
+<div>                                         77                                     55                                                                                                                                                                                                                    333333333</div>
+<div>                                         77                                     55                                                                                                                                                                                                                    333333333</div>
+<div>                                         77                                     55                                                                                                                                                                                                                     33333333</div>
+<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                        77777                                   55                                                                                                                                                                                                                        33</div>
+<div>                                      77777777                                  55                                                                                                                                                                                                                        33</div>
+<div>                                      777777777                                 55                                                                                                                                                                                                                        33</div>
+<div>                                      77777777                                  55                                                                                                                                                                                                                        33</div>
+<div>                                        55171                                   55                                                                                                                                                                                                                        33</div>
+<div>                                        667                                     55                                                                                                                                                                                                                        33</div>
+<div>                                       6677                                     55                                                                                                                                                                                                                        33</div>
+<div>                                      66677                                     55                                                                                                                                                                                                                        33</div>
+<div>                                     969 77                                     55                                                                                                                                                                                                                       333</div>
+<div>                                    669  77                                     55                                                                                                                                                                                                                       33</div>
+<div>                                  666    77                                     55                                                                                                                                                                                                                      33</div>
+<div>                               9666      77                                     55                                                                                                                                                                                                                     333</div>
+<div>                       666696666         77                                     55                                                                                                                                                                                                                    333</div>
+<div>                66666696666              77                                     55                                                                                                                                                                                                                  3333</div>
+<div>              6669                       77                                     55                                                                                                                                                                                                               3333</div>
+<div>            966                          77                                     55       333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333</div>
+<div>           666                           77                                     55    3333</div>
+<div>          669                            77                                     55  333</div>
+<div>         666                             77                                     55 333</div>
+<div>         66                              77                                     5533</div>
+<div>         66                              77                                     553</div>
+<div>        66666                            77                                     533</div>
+<div>      96666666                           77                                     52</div>
+<div>      666666669                          77                                     55</div>
+<div>      666666666                          77                                     55</div>
+<div>       666666                            77                                     55</div>
+<div>         66                              77                                    555</div>
+<div>         66                              77                                    55</div>
+<div>         66                              77                                    55</div>
+<div>         66                              77                                   55</div>
+<div>         66                              77                                  55</div>
+<div>         66                              77                                555</div>
+<div>         66                              77                              5555</div>
+<div>         66                              77         5555555555555555555555</div>
+<div>         66                              77      55555555555555555555</div>
+<div>         66                              77   5555</div>
+<div>         66                              77  555</div>
+<div>         66                              77 55</div>
+<div>         66                              7155</div>
+<div>         66                              755</div>
+<div>         66                              725</div>
+<div>         66                              735</div>
+<div>         66                              71</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>         66                              77</div>
+<div>       966669                            77</div>
+<div>      666666669                          77</div>
+<div>      666666669                          77</div>
+<div>      66666666                           77</div>
+<div>        66669                            77</div>
+<div>         66                              77</div>
+<div>         966                             77</div>
+<div>          666                            77</div>
+<div>           666                           77</div>
+<div>            6666                         77</div>
+<div>               666                       77</div>
+<div>                 66666                   77</div>
+<div>                     66666666666696      77</div>
+<div>                          6966669666666  77</div>
+<div>                                      66677</div>
+<div>                                       9657</div>
+<div>                                        663</div>
+<div>                                         66</div>
+<div>                                         66</div>
+<div>                                         66</div>
+<div>                                         46</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                        7777</div>
+<div>                                      77777777</div>
+<div>                                      777777777</div>
+<div>                                      77777777</div>
+<div>                                       177777</div>
+<div>                                         7299</div>
+<div>                                         7799</div>
+<div>                                         77 99</div>
+<div>                                         77  99</div>
+<div>                                         77   999</div>
+<div>                                         77    9999</div>
+<div>                                         77      9999</div>
+<div>                                         77         999999999999999</div>
+<div>                                         77                      9999999</div>
+<div>                                         77                           9999</div>
+<div>                                         77                             999</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                           99999999</div>
+<div>                                         77                           999999999</div>
+<div>                                         77                           999999999</div>
+<div>                                         77                            9999999</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                       7777777                           99</div>
+<div>                                      777777777                          99</div>
+<div>                                      77777777                           99</div>
+<div>                                       7777771                           99</div>
+<div>                                         17                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                              99</div>
+<div>                                         77                             99</div>
+<div>                                         77                            99</div>
+<div>                                         77                          999</div>
+<div>                                         77                       9999</div>
+<div>                                         77                    9999</div>
+<div>                                         77       99999999999999</div>
+<div>                                         77   99999999999</div>
+<div>                                         77 999</div>
+<div>                                         7399</div>
+<div>                                         769</div>
+<div>                                         799</div>
+<div>                                         299</div>
+<div>                                         99</div>
+<div>                                         99</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         777</div>
+<div>                                       7777777</div>
+<div>                                      777777771</div>
+<div>                                      77777777</div>
+<div>                                       1777777</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         771</div>
+<div>                                      17777777</div>
+<div>                                      777777777</div>
+<div>                                      77777777</div>
+<div>                                       7777777</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                         77</div>
+<div>                                        7777</div>
+<div>                                      77777777</div>
+<div>                                      777777777</div>
+<div>                                      17777777</div>
+<div>                                       177771</div>
     </div>
-  </header>
 
-  <main class="wrap">
-    <section class="hero">
-      <h1>Hosted Lore</h1>
-      <p>A short, punchy sentence describing what Hosted Lore is and who it's for.</p>
-      <a class="btn" href="#">Get started</a>
-    </section>
+    <main class="content">
+      <section class="section" style="top: 0">
+        <h1>Managed Lore Hosting</h1>
+        <p>A managed Lore hosting solution from Anchorpoint. In the cloud or self-hosted. We take care of security, uptime and support.</p>
+      </section>
 
-    <section class="features">
-      <div class="feature">
-        <h3>Feature one</h3>
-        <p>Describe the first key benefit here.</p>
+      <section class="section" style="top: 195.5px">
+        <h2>GitHub-like hosted Lore repositories are coming</h2>
+        <div>
+          <p>You probably heard about Lore, the new version control system from Epic Games.</p>
+          <div class="blank"></div>
+          <p>If you don’t care about managing servers and all the hassles with configuring AWS, we do that for you at a fair price.</p>
+        </div>
+      </section>
+
+      <section class="section" style="top: 386.5px; width: 506px">
+        <h2>Why not today?</h2>
+        <div>
+          <p>Lore is still pre v1.0. We are building the infrastructure around it but it’s just too early to say that it’s “production ready”.</p>
+          <div class="blank"></div>
+          <p>However if you want to test it, you can access the beta version.</p>
+        </div>
+      </section>
+      <a class="abs" style="left: 0; top: 528.5px" href="mailto:contact@anchorpoint.app?subject=Access%20Lore%20Hosting">Access the beta</a>
+
+      <section class="section" style="top: 661.5px">
+        <h2>Who we are</h2>
+        <div>
+          <p>We are <a href="https://www.anchorpoint.app">Anchorpoint</a>, and have built version control tooling around Git since 2020.</p>
+          <div class="blank"></div>
+          <p>We serve companies such as Innogames, Service Plan Group or Yostar.</p>
+        </div>
+        <p>Our solution is also part of the official Unreal Engine documentation.</p>
+      </section>
+
+      <div class="logos" aria-label="Anchorpoint customers">
+        <img src="assets/logos/innogames.svg" alt="InnoGames" width="50" height="28" style="left: 26.5px; top: 19.29px">
+        <img src="assets/logos/yostar.svg" alt="Yostar" width="60" height="14" style="left: 86.5px; top: 26.29px">
+        <img src="assets/logos/astound.svg" alt="Astound" width="60" height="14" style="left: 165.5px; top: 26.29px">
+        <img src="assets/logos/eyeline-studios.svg" alt="Eyeline Studios" width="129" height="19" style="left: 232.5px; top: 29.29px">
+        <img src="assets/logos/serviceplan-group.svg" alt="Serviceplan Group House of Communication" width="206" height="21" style="left: 386.5px; top: 21.29px">
       </div>
-      <div class="feature">
-        <h3>Feature two</h3>
-        <p>Describe the second key benefit here.</p>
-      </div>
-      <div class="feature">
-        <h3>Feature three</h3>
-        <p>Describe the third key benefit here.</p>
-      </div>
-    </section>
-  </main>
 
-  <footer>
-    <div class="wrap">&copy; <span id="year"></span> Anchorpoint Software GmbH</div>
-  </footer>
+      <section class="section" style="top: 1046.5px">
+        <h2>Is Lore the right thing for you?</h2>
+        <div>
+          <p>It is the right thing when you work on large binary-heavy projects, because it’s fast and has features to handle large projects such as chunking, repository layers and a virtual file system.</p>
+          <div class="blank"></div>
+          <p>-- How Lore compares to Git and Perforce --</p>
+          <div class="timings">
+            <div class="timing" style="left: 0">Lore: 6m</div>
+            <div class="timing" style="left: 158px">Perforce: 1h 23m</div>
+            <div class="timing" style="left: 320px">Git LFS: 1h 6m</div>
+          </div>
+          <p>We have pushed 392,559 files with a total size of 63.5 GB on a 790 Mbps upload speed.</p>
+          <div class="blank"></div>
+        </div>
+        <p>It is not the right thing for you when your projects are light, such as mobile development. Git is more than enough here. Workflow wise when it comes to branching or pull requests it’s the same as Git.</p>
+      </section>
 
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      <section class="section" style="top: 1526px">
+        <h2>Want to play around with Lore today?</h2>
+        <div>
+          <p>We have a slick desktop GUI for Lore that you can download for free. Use it on your Lore repositories.</p>
+          <p>You can also sign up to our mailing list or reach out to our CEO directly for a demo.</p>
+        </div>
+      </section>
+      <a class="abs" style="left: 0; top: 1685px" href="https://www.anchorpoint.app/lore">View Lore desktop</a>
+      <a class="abs" style="left: 166px; top: 1685px" href="https://www.anchorpoint.app/book-a-demo">Book a demo</a>
+      <a class="abs" style="left: 290px; top: 1685px" href="mailto:contact@anchorpoint.app?subject=Access%20Lore%20Hosting">Access the beta</a>
+    </main>
+
+    <footer class="abs" style="left: 269px; top: 1825.5px">
+      © 2026 Anchorpoint Software GmbH<br>
+      Florinsmarkt 14<br>
+      56068 Koblenz<br>
+      Germany
+    </footer>
+  </div>
+
+  <script>
+    // Correct the horizontal scale for whichever monospace font actually rendered,
+    // so one art column is always 2.855px wide.
+    (function () {
+      var graph = document.querySelector('.graph');
+      function fit() {
+        var probe = document.createElement('span');
+        probe.textContent = '0'.repeat(100);
+        graph.appendChild(probe);
+        var scaled = probe.getBoundingClientRect().width / 100;
+        graph.removeChild(probe);
+        var natural = scaled / new DOMMatrix(getComputedStyle(graph).transform).a;
+        graph.style.transform = 'scale(' + (2.854848 / natural) + ', 0.51568)';
+      }
+      fit();
+      if (document.fonts) document.fonts.ready.then(fit);
+    })();
+  </script>
 </body>
 </html>
