@@ -58,7 +58,6 @@
     a { color: var(--link); text-decoration: none; }
     a:hover, a:focus-visible { text-decoration: underline; }
 
-    /* Canvas matches the 846px-wide Figma frame; everything inside is positioned in frame coordinates. */
     /* Random digits popping in and out behind the page, on the same cell grid as the ASCII graph. */
     .glyphs {
       position: fixed;
@@ -69,6 +68,7 @@
       pointer-events: none;
     }
 
+    /* Canvas matches the 846px-wide Figma frame; everything inside is positioned in frame coordinates. */
     .page {
       position: relative;
       z-index: 1;
@@ -141,11 +141,49 @@
     .logos img { position: absolute; display: block; }
 
     .abs { position: absolute; white-space: nowrap; }
+
+    /* Main lane only, built by script next to each headline on narrow screens. */
+    .lane {
+      display: none;
+      position: absolute;
+      left: 0;
+      margin: 0;
+      font: 10px/10px "JetBrains Mono", ui-monospace, Consolas, monospace;
+      white-space: pre;
+      transform-origin: 0 0;
+      transform: scale(0.4758, 0.51568);
+    }
+
+    /* Narrow screens: hide the full graph and let the text flow at the available width. */
+    @media (max-width: 879px) {
+      .page { width: auto; height: auto; margin: 40px 16px; }
+      .graph { display: none; }
+      .lane { display: block; }
+      .content { position: static; width: auto; max-width: 546px; padding-left: 40px; }
+      .section { position: relative; top: auto !important; width: auto !important; margin-top: 56px; }
+      .section:first-child { margin-top: 0; }
+      .timings { display: flex; flex-wrap: wrap; gap: 8px; height: auto; margin: 12px 0; }
+      .timing { position: static; }
+      .logos {
+        position: static;
+        width: auto;
+        height: auto;
+        margin-top: 32px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px 20px;
+      }
+      .logos img { position: static; }
+      .content > .abs { position: static; display: inline-block; margin: 12px 24px 0 0; }
+      footer.abs { position: static; display: block; margin-top: 72px; padding-left: 40px; white-space: normal; }
+    }
   </style>
 </head>
 <body>
   <canvas class="glyphs" aria-hidden="true"></canvas>
   <div class="page">
+    <pre class="lane" aria-hidden="true"></pre>
     <div class="graph" aria-hidden="true">
 <div></div>
 <div></div>
@@ -552,8 +590,8 @@
         <img src="assets/logos/innogames.svg" alt="InnoGames" width="50" height="28" style="left: 26.5px; top: 19.29px">
         <img src="assets/logos/yostar.svg" alt="Yostar" width="60" height="14" style="left: 86.5px; top: 26.29px">
         <img src="assets/logos/astound.svg" alt="Astound" width="60" height="14" style="left: 165.5px; top: 26.29px">
-        <img src="assets/logos/eyeline-studios.svg" alt="Eyeline Studios" width="129" height="19" style="left: 232.5px; top: 29.29px">
-        <img src="assets/logos/serviceplan-group.svg" alt="Serviceplan Group House of Communication" width="206" height="21" style="left: 386.5px; top: 21.29px">
+        <img src="assets/logos/eyeline-studios.svg" alt="Eyeline Studios" width="129" height="19" style="left: 244.5px; top: 29.29px">
+        <img src="assets/logos/serviceplan-group.svg" alt="Serviceplan Group House of Communication" width="206" height="21" style="left: 398.5px; top: 21.29px">
       </div>
 
       <section class="section" style="top: 1046.5px">
@@ -594,21 +632,53 @@
   </div>
 
   <script>
-    // Correct the horizontal scale for whichever monospace font actually rendered,
-    // so one art column is always 2.855px wide.
+    // ASCII graph and mobile lane. One art cell is 2.855px x 5.157px; the horizontal
+    // scale is corrected for whichever monospace font actually rendered.
     (function () {
+      var CELL_W = 2.854848, CELL_H = 5.1568;
+      var LINE = '   77';
+      var DOT = ['  7777', ' 777777', '77777777', ' 777777', '  7777'];
+      var page = document.querySelector('.page');
       var graph = document.querySelector('.graph');
-      function fit() {
-        var probe = document.createElement('span');
-        probe.textContent = '0'.repeat(100);
-        graph.appendChild(probe);
-        var scaled = probe.getBoundingClientRect().width / 100;
-        graph.removeChild(probe);
-        var natural = scaled / new DOMMatrix(getComputedStyle(graph).transform).a;
-        graph.style.transform = 'scale(' + (2.854848 / natural) + ', 0.51568)';
+      var lane = document.querySelector('.lane');
+      var narrow = matchMedia('(max-width: 879px)');
+      var measure = document.createElement('canvas').getContext('2d');
+
+      function scaleX() {
+        measure.font = '10px "JetBrains Mono", ui-monospace, Consolas, monospace';
+        return CELL_W / measure.measureText('0').width;
       }
-      fit();
-      if (document.fonts) document.fonts.ready.then(fit);
+
+      // On narrow screens, draw the main lane from the first headline to the footer,
+      // with a dot centred on every headline.
+      function buildLane() {
+        if (!narrow.matches) { lane.textContent = ''; return; }
+        var top = page.getBoundingClientRect().top;
+        var centres = [].map.call(document.querySelectorAll('.section h1, .section h2, footer'), function (el) {
+          var r = el.getBoundingClientRect();
+          var y = el.tagName === 'FOOTER' ? r.top - top + 12 : r.top - top + r.height / 2;
+          return Math.round(y / CELL_H - 0.5);
+        });
+        var first = centres[0] - 2, last = centres[centres.length - 1] + 2, rows = [];
+        for (var i = first; i <= last; i++) {
+          var dot = null;
+          for (var j = 0; j < centres.length; j++) if (Math.abs(i - centres[j]) <= 2) dot = DOT[i - centres[j] + 2];
+          rows.push(dot || LINE);
+        }
+        lane.textContent = rows.join('\n');
+        lane.style.top = first * CELL_H + 'px';
+      }
+
+      function layout() {
+        var t = 'scale(' + scaleX() + ', ' + CELL_H / 10 + ')';
+        graph.style.transform = t;
+        lane.style.transform = t;
+        buildLane();
+      }
+
+      layout();
+      addEventListener('resize', layout);
+      if (document.fonts) document.fonts.ready.then(layout);
     })();
 
     // Background glyphs: random digits that pop in and out, drawn at the same
