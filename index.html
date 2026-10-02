@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hosted Lore</title>
+  <meta name="description" content="Hosted Lore by Anchorpoint.">
+  <meta property="og:title" content="Hosted Lore">
+  <meta property="og:description" content="Hosted Lore by Anchorpoint.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='%23fff' font-family='system-ui'>L</text></svg>">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --muted: #5c5c5c;
+      --accent: #2f6bff;
+      --border: #e6e6e6;
+      --max: 1080px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e0e10;
+        --fg: #f2f2f2;
+        --muted: #a0a0a6;
+        --accent: #6b95ff;
+        --border: #26262a;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    a { color: var(--accent); }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+
+    header { border-bottom: 1px solid var(--border); }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .logo { font-weight: 700; text-decoration: none; color: var(--fg); }
+
+    .hero { padding: 96px 0 72px; }
+    .hero h1 { font-size: clamp(2.2rem, 6vw, 3.8rem); line-height: 1.1; margin: 0 0 16px; letter-spacing: -0.02em; }
+    .hero p { font-size: 1.2rem; color: var(--muted); max-width: 60ch; margin: 0 0 32px; }
+    .btn {
+      display: inline-block; padding: 12px 22px; border-radius: 8px;
+      background: var(--accent); color: #fff; text-decoration: none; font-weight: 600;
+    }
+
+    .features { padding: 48px 0 96px; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .feature { border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .feature h3 { margin: 0 0 8px; font-size: 1.1rem; }
+    .feature p { margin: 0; color: var(--muted); }
+
+    footer { border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+    footer .wrap { padding-top: 24px; padding-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="./">Hosted Lore</a>
+      <a href="https://www.anchorpoint.app">Anchorpoint</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Hosted Lore</h1>
+      <p>A short, punchy sentence describing what Hosted Lore is and who it's for.</p>
+      <a class="btn" href="#">Get started</a>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <h3>Feature one</h3>
+        <p>Describe the first key benefit here.</p>
+      </div>
+      <div class="feature">
+        <h3>Feature two</h3>
+        <p>Describe the second key benefit here.</p>
+      </div>
+      <div class="feature">
+        <h3>Feature three</h3>
+        <p>Describe the third key benefit here.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">&copy; <span id="year"></span> Anchorpoint Software GmbH</div>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
