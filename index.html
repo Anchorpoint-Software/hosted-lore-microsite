@@ -397,7 +397,7 @@
 <div>                                         77                                     55</div>
 <div>                                         77                                     55</div>
 <div>                                         77                                     55</div>
-<div>                                         77                                     55                                                                                                                                                                                                                        33</div>
+<div>                                         77                                     55                                                                                                                                                                                                                      3333</div>
 <div>                                         77                                     55                                                                                                                                                                                                                     33333333</div>
 <div>                                         77                                     55                                                                                                                                                                                                                    333333333</div>
 <div>                                         77                                     55                                                                                                                                                                                                                    333333333</div>
@@ -902,6 +902,73 @@
         }
         art.textContent = out.join('\n');
       }
+
+      requestAnimationFrame(frame);
+    })();
+
+    // Negative noise on the commit graph: random characters blink out and back in.
+    // Characters are swapped in place (same text length), so text selection survives;
+    // while part of the graph is selected the noise pauses and everything is restored.
+    (function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var DENSITY = 0.015;   // share of graph characters hidden at any moment
+      var FRAME = 1000 / 30;
+      var graph = document.querySelector('.graph');
+      var lane = document.querySelector('.lane');
+      var narrow = matchMedia('(max-width: 879px)');
+      var source = null, cells = [], holes = [], paused = false, last = 0;
+
+      // Every non-space character of the visible graph: the full graph or the mobile lane.
+      function load() {
+        var next = narrow.matches ? lane.firstChild : graph;
+        if (next === source) return;
+        restore();
+        source = next;
+        cells = [];
+        if (!source) return;
+        var nodes = source === graph
+          ? [].map.call(graph.children, function (d) { return d.firstChild; })
+          : [source];
+        nodes.forEach(function (node) {
+          if (!node) return;
+          for (var i = 0; i < node.data.length; i++) {
+            var ch = node.data[i];
+            if (ch !== ' ' && ch !== '\n') cells.push({ node: node, off: i, ch: ch, hidden: false });
+          }
+        });
+      }
+
+      function show(cell) { cell.node.replaceData(cell.off, 1, cell.ch); cell.hidden = false; }
+      function hide(cell) { cell.node.replaceData(cell.off, 1, ' '); cell.hidden = true; }
+      function restore() { holes.forEach(function (h) { show(h.cell); }); holes = []; }
+
+      function frame(now) {
+        requestAnimationFrame(frame);
+        if (paused || now - last < FRAME - 4) return;
+        last = now;
+        load();
+        if (!cells.length) return;
+        holes = holes.filter(function (h) {
+          if (now < h.until) return true;
+          show(h.cell);
+          return false;
+        });
+        var target = cells.length * DENSITY;
+        for (var n = 0; holes.length < target && n < target / 8; n++) {
+          var cell = cells[Math.floor(Math.random() * cells.length)];
+          if (cell.hidden) continue;
+          hide(cell);
+          holes.push({ cell: cell, until: now + 300 + Math.random() * 1200 });
+        }
+      }
+
+      document.addEventListener('selectionchange', function () {
+        var sel = getSelection();
+        var selecting = !sel.isCollapsed && sel.rangeCount > 0 &&
+          (sel.getRangeAt(0).intersectsNode(graph) || sel.getRangeAt(0).intersectsNode(lane));
+        if (selecting && !paused) restore();
+        paused = selecting;
+      });
 
       requestAnimationFrame(frame);
     })();
