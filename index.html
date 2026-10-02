@@ -59,6 +59,16 @@
     a:hover, a:focus-visible { text-decoration: underline; }
 
     /* Canvas matches the 846px-wide Figma frame; everything inside is positioned in frame coordinates. */
+    /* Random digits popping in and out behind the page, on the same cell grid as the ASCII graph. */
+    .glyphs {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
     .page {
       position: relative;
       z-index: 1;
@@ -134,6 +144,7 @@
   </style>
 </head>
 <body>
+  <canvas class="glyphs" aria-hidden="true"></canvas>
   <div class="page">
     <div class="graph" aria-hidden="true">
 <div></div>
@@ -598,6 +609,68 @@
       }
       fit();
       if (document.fonts) document.fonts.ready.then(fit);
+    })();
+
+    // Background glyphs: random digits that pop in and out, drawn at the same
+    // cell size as the ASCII graph (2.855px x 5.157px).
+    (function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var CELL_W = 2.854848, CELL_H = 5.1568;
+      var DENSITY = 0.002;   // share of cells lit at any moment
+      var PEAK = 0.35;       // max opacity of a glyph
+      var CHARS = '0123456789';
+      var canvas = document.querySelector('.glyphs');
+      var ctx = canvas.getContext('2d');
+      var color = getComputedStyle(document.body).color;
+      var glyphs = [], cols = 0, rows = 0, sx = 1, sy = CELL_H / 10;
+
+      function resize() {
+        var dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(innerWidth * dpr);
+        canvas.height = Math.round(innerHeight * dpr);
+        ctx.font = '10px "JetBrains Mono", ui-monospace, Consolas, monospace';
+        sx = CELL_W / ctx.measureText('0').width;
+        ctx.setTransform(dpr * sx, 0, 0, dpr * sy, 0, 0);
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = color;
+        cols = Math.ceil(innerWidth / CELL_W);
+        rows = Math.ceil(innerHeight / CELL_H);
+        glyphs = [];
+      }
+
+      function spawn(now) {
+        glyphs.push({
+          col: Math.floor(Math.random() * cols),
+          row: Math.floor(Math.random() * rows),
+          ch: CHARS[Math.floor(Math.random() * CHARS.length)],
+          born: now,
+          life: 300 + Math.random() * 1200
+        });
+      }
+
+      function frame(now) {
+        var target = cols * rows * DENSITY;
+        for (var n = 0; glyphs.length < target && n < target / 10; n++) spawn(now);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        var advance = CELL_W / sx;
+        glyphs = glyphs.filter(function (g) {
+          var t = (now - g.born) / g.life;
+          if (t >= 1) return false;
+          // Pop in fast, hold, fade out over the last 30%.
+          ctx.globalAlpha = PEAK * Math.min(1, t / 0.05, (1 - t) / 0.3);
+          ctx.fillText(g.ch, g.col * advance, g.row * 10);
+          return true;
+        });
+        requestAnimationFrame(frame);
+      }
+
+      resize();
+      addEventListener('resize', resize);
+      if (document.fonts) document.fonts.ready.then(resize);
+      requestAnimationFrame(frame);
     })();
   </script>
 </body>
