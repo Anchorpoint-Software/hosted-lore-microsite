@@ -80,7 +80,7 @@
       position: relative;
       z-index: 1;
       width: 846px;
-      height: 2371px;
+      height: 2411px;
       margin: 64px auto;
     }
 
@@ -148,6 +148,9 @@
     .logos img { position: absolute; display: block; }
 
     .abs { position: absolute; white-space: nowrap; }
+
+    .legal { display: flex; flex-wrap: wrap; gap: 0 24px; margin-top: 16px; }
+    .legal a { color: inherit; }
 
     /* Framed Lore logo (545 x 427 in Figma). The art fills a 258 x 259 area in the centre;
        its scale is set by script so it follows the box width on narrow screens. */
@@ -816,6 +819,11 @@
       Florinsmarkt 14<br>
       56068 Koblenz<br>
       Germany
+      <nav class="legal" aria-label="Legal">
+        <a href="https://www.anchorpoint.app/policies/imprint">Imprint</a>
+        <a href="https://www.anchorpoint.app/policies/privacy-policy">Privacy Policy</a>
+        <a href="https://www.anchorpoint.app/policies/terms-and-conditions">Terms</a>
+      </nav>
     </footer>
   </div>
 
