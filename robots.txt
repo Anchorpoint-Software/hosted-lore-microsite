@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# Decorative ASCII art, kept out of the index
+Disallow: /assets/ascii/
+
+Sitemap: https://hostedlore.com/sitemap.xml

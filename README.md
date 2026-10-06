@@ -6,6 +6,8 @@ A single static page (`index.html`) hosted on GitHub Pages.
 
 Open `index.html` in a browser to preview. There's no build step.
 
+The ASCII art (commit graph and Lore logo) lives in `assets/ascii/art.js`, not in the HTML. That file is disallowed in `robots.txt`, so search engines and AI agents don't index thousands of art characters as page text.
+
 ## Deploy
 
 GitHub Pages serves the `main` branch root:
